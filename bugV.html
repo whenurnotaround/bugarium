@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>IPA Project: Welcome aboard</title>
+	<style>
+		body{
+			font-family: "Helvetica Neue", Helvetica, sans-serif;
+		}
+
+		h1 {
+		font-size: 45px;
+		font-weight: 300;
+		letter-spacing: -2px;
+		margin: .3em 0 .2em 0;
+		}
+
+		.link-reporter {
+		  stroke: #CC0000;
+		 stroke-width:1.5px;
+		}
+
+		.link-participator {
+		  stroke: #ccc;
+		}
+
+		.node text {
+		  pointer-events: none;
+		  font: 12px sans-serif;
+		}
+
+		.axis path,
+		.axis line {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
+
+		.dot {
+		  stroke: #000;
+		}
+
+		#year-slider {
+		  border-radius: 0px 0px 0px 0px;
+		  margin-top:5px;
+		  margin-bottom:5px;
+		  background: #FFF;
+		  width: 2400px;
+		}
+
+		#display-box{
+			width:2400px;
+		}
+
+		.center{
+			margin-left:auto;
+			margin-right:auto;
+			width:100%;
+
+		}
+
+		#credit-caption {
+			font-family:"Times New Roman", Times, serif;
+			font-size:small;
+			color:gray;
+		}
+
+		#footer{
+			width:1060px;
+		}
+	</style>
+	
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+	<link rel="stylesheet" href="/resources/demos/style.css" />
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="http://js.leapmotion.com/0.2.0/leap.min.js"></script>
+	
+	<script type="text/javascript" charset="utf-8">
+	
+	
+	//////////// SETUP PATH ///////////////////
+	var div_pic = "/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/pics/Dev.png";
+	var bug_p1_pic = "/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/pics/P1.png";
+	var bug_p2_pic = "/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/pics/P2.png";
+	var bug_p3_pic = "/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/pics/P3.png";
+	var bug_p4_pic = "/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/pics/P4.png";
+	var bug_p5_pic = "/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/pics/P5.png";
+	var bug_p6_pic = "/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/pics/P6.png";
+	var bugdata_path = "/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/data/newbugs/output-";
+	
+	/////////////SETUP CONFIG/////////////////////
+	//var link_to_bugarium = "";
+	var display_width = 2400;
+	var display_hight = 1100;
+	////////////////////////////////////////////
+	
+		function insertTexttoDom(dom,text) {
+			document.getElementById(dom).innerHTML=text;
+		};
+		
+		function changeYear(year) {
+			var visualizeBox = document.getElementById("visualize-box");
+			visualizeBox.innerHTML="";
+			displayLinkV(year);
+		};
+		
+		function displayLinkV(year) {
+			
+			var width = display_width,
+			    height = display_hight;
+
+			var svg = d3.select(document.getElementById("visualize-box")).append("svg")
+			    .attr("width", width)
+			    .attr("height", height)
+				.style("border", "1px solid gray");
+
+			var force = d3.layout.force()
+			    .gravity(0.5)
+			    .distance(150)
+			    .charge(-1000)
+			    .size([width, height]);
+
+
+
+			d3.json(year, function(json) {
+			  force
+			      .nodes(json.nodes)
+			      .links(json.links)
+			      .start();
+
+			  var developer_count = 0;
+			  var bug_count = 0;
+
+			  var link = svg.selectAll(".link")
+			      .data(json.links)
+			      .enter().append("line")
+			      .attr("class", function(d){
+				    if (d.role == "Participator") {
+					 	return "link-participator";
+					} else {
+						return "link-reporter";
+					}	
+				
+				   });
+
+			  var node = svg.selectAll(".node")
+			      .data(json.nodes)
+			      .enter().append("g")
+				  .attr("width", 50)
+				  .attr("height", 50)
+			      .attr("class", "node")
+				  .style("fill", function(d)
+					{
+						if (d.type == 2) {
+							return "black";
+						}	
+						else {
+						 	return "green";
+						}
+					})
+			      .call(force.drag);
+
+
+			  node.append("image")
+			      .attr("xlink:href", function(d) 
+						{ 
+							if (d.type == 2) {
+								 developer_count =++developer_count;
+
+								return div_pic;
+							}	
+							else {
+								bug_count =++bug_count;
+								
+									if (d.priority == 1) {
+	 									return bug_p1_pic;
+	 								} else if (d.priority == 2){
+	 									return bug_p2_pic;
+	 								} else if (d.priority == 3){
+	 									return bug_p3_pic;
+	 								} else if (d.priority == 4){
+	 									return bug_p4_pic;
+	 								} else if (d.priority == 5){
+	 									return bug_p5_pic;
+	 								} else {
+	 									return bug_p6_pic;
+	 								}
+								
+							 	
+							}
+						}
+
+			       )
+			      .attr("x", -8)
+			      .attr("y", -8)
+			      .attr("width", function(d)
+					{
+						
+						if (d.type == 2) {
+
+							return 15;
+						}	
+						else {
+							var p = d.priority;
+							if (p == 1) {
+								return 120;
+							}else {
+								return 120;
+							}
+						 	
+						}
+					}
+			      )
+			      .attr("height", function(d)
+					{
+					
+						if (d.type == 2) {
+
+							return 15;
+						}	
+						else {
+							var p = d.priority;
+							if (p == 1) {
+								return 30;
+							}else {
+								return 30;
+							}
+						 	
+						}
+					}
+					
+		          );
+
+			  node.append("text")
+			      .attr("dx", 10)
+			      .attr("dy", ".5em")
+			      .text(function(d) { 
+						if (d.type == 1) {
+
+							return d.bugid;
+						}	
+						else {
+
+						 	return d.name;
+						}
+				   });
+			 
+			  force.on("tick", function() {
+			    link.attr("x1", function(d) { return d.source.x; })
+			        .attr("y1", function(d) { return d.source.y; })
+			        .attr("x2", function(d) { return d.target.x; })
+			        .attr("y2", function(d) { return d.target.y; });
+
+			    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+			  });
+			
+			  var mouseOn = function(d) { 
+				var html_text = "";
+				if (d.type == 1) {
+					html_text = d.bugid + "<br />" + "Priority:" + d.priority + "<br />" + "Open Date:" + d.opendate + "<br />" + "Close Date:" + d.closedate;
+				} else {
+					html_text = d.name;
+				}
+				$(document).mousemove(function(e){
+					// $('#info-box').fadeIn();
+					// 					$('#info-box').html(html_text);
+					// 					$("#info-box").offset({left:e.pageX+20,top:e.pageY+20});
+				 });
+				
+			  };
+
+			  var mouseOff = function() {
+				// $('#info-box').fadeOut();
+			  };
+			  
+			  node.on("mouseover", mouseOn);
+			  node.on("mouseout", mouseOff);
+			  insertTexttoDom("developer-count",developer_count);
+			  insertTexttoDom("bug-count",bug_count);
+
+			});
+		}
+	
+		$(function() {
+		    $( "#year-slider" ).slider({
+		      value:100,
+		      min: 2001,
+		      max: 2008,
+		      step: 1,
+		      slide: function( event, ui ) {
+		        $( "#show-year" ).val(ui.value );
+				changeYear(bugdata_path + ui.value + ".json");
+		      }
+		    });
+		    $( "#show-year" ).val( $( "#year-slider" ).slider( "value" ) );
+		    
+		 });
+	</script>
+  	<script language="javascript" type="text/javascript" >
+		function showTooltip(div, title, desc)
+		{
+		 div.style.display = 'inline';
+		 div.style.position = 'absolute';
+		 div.style.width = '200';
+		 div.style.backgroundColor = '#EFFCF0';
+		 div.style.border = 'dashed 1px black';
+		 div.style.padding = '10px';
+		 div.innerHTML = '<b>' + title + '</b><div style="padding-left:10; padding-right:5">' + desc + '</div>';
+		}
+
+		function hideTooltip(div)
+		{
+		 div.style.display = 'none';
+		}
+		// Creates our Leap Controller
+	    var controller = new Leap.Controller({enableGestures:true});
+
+	    // Tells the controller what to do every time it sees a frame
+	    controller.on( 'frame' , function( frame ){
+			var test = d3.select(document.getElementById("visualize-box"));
+			var allNode = test.selectAll(".node");
+			var numberOfFingers = frame.fingers.length;
+			
+			console.log(numberOfFingers);
+			switch (numberOfFingers)
+			{
+			case 1:
+				
+			  break;
+			case 2:
+			  
+			  break;
+			case 3:
+			  
+			  break;
+			case 4:
+			  
+			  break;
+			case 5:
+			  break;
+			case 6:
+			  
+			  break;
+			}
+			
+			//$("#visualize-box").html($("#visualize-box").html());
+			
+		});
+
+	    // Get frames rolling by connecting the controller
+	    controller.connect();
+	</script>
+</head>
+  <body>
+	
+	
+	
+	
+	<div id="display-box" class="center">
+		<!-- <h1>Bugs Visualization</h1> -->
+		
+		<!-- <a href="/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/index.html">DEMO</a>  -->
+		<div id="visualize-box" class="center"></div>
+		<label for="year" style="font-size:10px;">Eclipse Platform Year:</label>
+		<input type="text" id="show-year" style="border: 0" />
+		<div id="year-slider"></div>
+		<div id = "info-box" style="text-align:center; margin-top:15px"><span style="text-align:right;"><span id="developer-count"></span> developers</span>
+		<span style="text-align:right;"><span id="bug-count"></span> bugs</span></div>
+		<div id = "notation" style="text-align:center; margin-top:15px">
+			
+			<img src="/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/pics/level.png" alt="Level" width="1032" height="119">
+			
+		</div>
+		
+	</div>
+	<div id="footer" class="center">
+		<p id = "credit-caption" style="text-align:center;">
+		  Bagarium Project. Developed by Software Engineering Laboratory, Graduate School of Information Science, Nara Institute of Science and Technology.
+		</p>
+	</div>
+	
+	<script type="text/javascript" charset="utf-8">
+		displayLinkV("/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/data/newbugs/output-2008.json");
+	</script>
+	
+</body>
+</html>

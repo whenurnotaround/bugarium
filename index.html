@@ -1,0 +1,422 @@
+<html>
+<head>
+	<style>
+	
+	body {
+		font-family: "Helvetica Neue", Helvetica, sans-serif;
+	}
+	
+	h1 {
+	font-size: 45px;
+	font-weight: 300;
+	letter-spacing: -2px;
+	margin: .3em 0 .2em 0;
+	}
+
+	.link-reporter {
+	  stroke: #CC0000;
+	 stroke-width:1.5px;
+	}
+	
+	.link-participator {
+	  stroke: #ccc;
+	}
+
+	.node text {
+	  pointer-events: none;
+	  font: 12px sans-serif;
+	}
+	
+	.axis path,
+	.axis line {
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+
+	.dot {
+	  stroke: #000;
+	}
+	
+	circle.hover {
+		fill:#006AFF;
+		fill-opacity: 10;
+		stroke: #EAFFF0;
+		stroke-width: 10;
+	}
+	
+	#year-slider {
+	  border-radius: 0px 0px 0px 0px;
+	  margin-top:5px;
+	  margin-bottom:5px;
+	  background: #FFF;
+	  width: 1060px;
+	}
+	
+	#display-box{
+		width:1060px;
+	}
+	
+	.center
+	{
+		margin-left:auto;
+		margin-right:auto;
+		width:100%;
+		
+	}
+	
+	#credit-caption {
+		font-family:"Times New Roman", Times, serif;
+		font-size:small;
+		color:gray;
+	}
+	
+	#footer{
+		width:1060px;
+	}
+	.cursor {
+	  height: 30px; 
+	  width: 30px; 
+	  margin-top: -17px;
+	  margin-left: -17px;
+	  position: absolute;
+	  border: 4px solid #000;
+	  border-radius: 5px;
+	  background: #888;
+	}
+	.cursor .inner {
+	  height: 100%;
+	  background: #fff;
+	}
+	
+	canvas {
+	  opacity: 1;
+	  position: absolute;
+	  top: 50px;
+	  left: 50px;
+	  width: 210px;
+	  height:200px;
+	  z-index: 0;
+	}
+
+	</style>
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="http://js.leapmotion.com/0.2.0/leap.min.js"></script>
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/js/Utility.js"></script>
+	<script type="text/javascript" src="/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/js/BugLife.js"></script>
+	<script type="text/javascript" src="/Users/PaponY/Dropbox/NAIST/ResearchGroup/HCI/LEAP MOTION/BugBoard/bugboard/js/Layout.js"></script>
+</head>
+<body>
+
+<div id="bugboard">
+    <canvas id="canvas"></canvas>
+ 	<svg id="svgcontent">
+	  <g id="interaction-controller" fill="white">
+	  	<rect id = "priorityBox" x="50" y="50" rx="20" ry="20" width="200" height="200"
+	 	style="stroke:black;stroke-width:5;opacity:0.5"/>
+	  </g>
+	  <g id = "bugList">
+		  <g id="group1"></g>
+		  <g id="group2"></g>
+		  <g id="group3"></g>
+		  <g id="group4"></g>	
+		  <g id="group5"></g>	
+	      <g id="group6"></g>
+	  </g>
+      <g id="relationship" fill="red"></g>
+	</svg>
+	<p>i would like to say:</p>
+</div>	
+ <script>
+ 
+ 	
+ 
+	// Save the canvas width and canvas height
+    // as easily accesible variables
+    var width = document.body.clientWidth,
+        height = document.body.clientHeight,
+		radius = Math.min(width, height) / 10,
+	    color = d3.scale.category20c();
+	
+		var h1 = [{ name: "open", value: 1500 },{ name: "closed", value: 500 },{ name: "Reopened", value: 100 },{ name: "Verified", value: 50 }, { name: "ReSolved", value: 20 }];
+		var h2 = [{ name: "open", value: 1500 },{ name: "closed", value: 500 }];
+		var h3 = [{ name: "open", value: 45 },{ name: "closed", value: 150 },{ name: "Reopened", value: 100 },{ name: "Verified", value: 50 }, { name: "ReSolved", value: 20 }];
+		var h4 = [{ name: "open", value: 30 },{ name: "closed", value: 89 },{ name: "Reopened", value: 100 },{ name: "Verified", value: 50 }, { name: "ReSolved", value: 20 }];
+		var h5 = [{ name: "open", value: 100 },{ name: "closed", value: 300 },{ name: "Reopened", value: 50 },{ name: "Verified", value: 50 }, { name: "ReSolved", value: 20 }];
+		var h6 = [{ name: "open", value: 2500 },{ name: "closed", value: 500 },{ name: "Reopened", value: 56 },{ name: "Verified", value: 50 }, { name: "ReSolved", value: 20 }];
+	
+	// var h1 = {"name":"2378", "children":[{"name":"open"}, {"name":"closed"}]};
+// 	var h2 = {"name":"32378", "children":[{"name":"open"}, {"name":"closed"}, {"name":"reopen"},{"name":"closed"}]};
+// 	var h3 = {"name":"2378", "children":[{"name":"open"}, {"name":"closed"}]};
+// 	var h4 = {"name":"2378", "children":[{"name":"open"}, {"name":"closed"}]};
+// 	var h5 = {"name":"2378", "children":[{"name":"open"}, {"name":"closed"}, {"name":"closed"}, {"name":"closed"}, {"name":"closed"}]};
+// 	var h6 = {"name":"2378", "children":[{"name":"open"}, {"name":"closed"}, {"name":"closed"}, {"name":"closed"}, {"name":"closed"}]};	
+	
+	var hAll = [h1,h2,h3,h4,h5,h6];
+	var bugList = [];
+	
+	for (var i = 0; i < 200; i++) {
+		//var temp = [bug1, bug2, bug3, bug4, bug5, bug6];
+		var randomSix = (Math.floor(Math.random()*6+1)+0);
+		var randomSix2 = (Math.floor(Math.random()*6+1)+0);
+		bugList.push(new BugLife("p"+i, hAll[randomSix-1], randomSix2));
+	}
+	
+	for(var i = 0; i < bugList.length; i++) {
+		utility.displayBug(bugList[i]);
+		//$("#group1").append(utility.displayBug(bugList[i]));
+	}
+
+	// refresh trick
+	$("#bugboard").html($("#bugboard").html());
+	
+  </script> 
+
+	
+	
+  <script>
+
+	function leapToScene( frame , leapPos ){
+
+	      // Gets the interaction box of the current frame
+	      var iBox = frame.interactionBox;
+
+	      // Gets the left border and top border of the box
+	      // In order to convert the position to the proper
+	      // location for the canvas
+	      var left = iBox.center[0] - iBox.size[0]/2;
+	      var top = iBox.center[1] + iBox.size[1]/2;
+		  
+		  // debug
+		  $(iBoxCX).html(iBox.center[0]);
+		  $(iBoxCY).html(iBox.center[1]);
+		  $(iBoxX).html(iBox.size[0]);
+		  $(iBoxY).html(iBox.size[1]);		  
+
+	      // Takes our leap coordinates, and changes them so
+	      // that the origin is in the top left corner 
+	      var x = leapPos[0] - left;
+	      var y = leapPos[1] - top;
+
+	      // Divides the position by the size of the box
+	      // so that x and y values will range from 0 to 1
+	      // as they lay within the interaction box
+	      x /= iBox.size[0];
+	      y /= iBox.size[1];
+
+	      // Uses the height and width of the canvas to scale
+	      // the x and y coordinates in a way that they 
+	      // take up the entire canvas
+	      x *= width;
+	      y *= height;
+
+	      // Returns the values, making sure to negate the sign 
+	      // of the y coordinate, because the y basis in canvas 
+	      // points down instead of up
+	      return [ x , -y ];
+
+	}
+	
+	// get all nodes
+	var allNode = $( "circle" );
+    var controller = new Leap.Controller({enableGestures:true});
+
+	var c =  canvas.getContext('2d');
+	//var width = canvas.width;
+	//var height = canvas.height;
+
+	controller.on('connect', function() {
+	  console.log("Successfully connected.");
+	  
+	});
+	
+    controller.on( 'frame' , function(frame){
+
+		  // detect fingers
+		  if (frame.pointables.length < 1) {
+			$("#sunblust").remove();
+			return;
+		  }	
+		  
+		  // Clears the canvas so frames don't build on each other.
+		      c.clearRect(0, 0, canvas.width, canvas.height);
+
+		      // Gets the number of fingers in each frame
+		      var numberOfFingers = frame.fingers.length;
+
+		      // Defines the font shape and size
+		      c.font = "80px Arial";
+
+		      // Tells Canvas how to align text
+		      c.textAlign = 'center';
+		      c.textBaseline = 'middle';
+
+		      // Tells Canvas to draw the The number of fingers,
+		      // at the center of the canvas
+		      c.fillText( numberOfFingers , canvas.width/2 , canvas.height/2 );
+		  
+		  //Clears the canvas so we are not drawing multiple frames	
+		  d3.selectAll(".cursor").remove();
+	
+		 frame.pointables.forEach(function(pointable,i) {
+			// only do 1 finger
+		    if (i > 0) return;
+
+		    // interaction box
+		    var pos = [
+		      width/2 + 6*pointable.tipPosition[0],
+		      height - 4*pointable.tipPosition[1] + 150,
+		      pointable.tipPosition[2]
+		    ];
+		
+			// distance to touch
+		    var sizeDifference = 100-Math.abs(pos[2]);
+		    if (sizeDifference < 0) sizeDifference = 0;
+		    
+		
+			var cursor = d3.select("body")
+		      .append("div")
+		      .attr("class", "cursor")
+		      .style({
+		        top: pos[1] + "px",
+		        left: pos[0] + "px"
+		      })
+		      .append("div")
+		      .attr("class", "inner")
+		      .style("width", sizeDifference + "%");
+		
+			if (Math.abs(pos[0] - 50) < 200 && Math.abs(pos[1] - 50) < 200) {
+				
+				$("#priorityBox").attr("fill","red");
+				
+				
+				if (frame.pointables.length == 1){
+					$('#group1').show();
+					$('#group2').fadeOut();
+					$('#group3').fadeOut();
+					$('#group4').fadeOut();
+					$('#group5').fadeOut();
+					$('#group6').fadeOut();
+					
+				}
+				
+				if (frame.pointables.length == 2){
+					$('#group1').fadeOut();
+					$('#group2').show();
+					$('#group3').fadeOut();
+					$('#group4').fadeOut();
+					$('#group5').fadeOut();
+					$('#group6').fadeOut();
+					
+				}
+				
+				if (frame.pointables.length == 3){
+					$('#group1').fadeOut();
+					$('#group2').fadeOut();
+					$('#group3').show();
+					$('#group4').fadeOut();
+					$('#group5').fadeOut();
+					$('#group6').fadeOut();
+					
+				}
+				
+				if (frame.pointables.length == 4){
+					$('#group1').fadeOut();
+					$('#group2').fadeOut();
+					$('#group3').fadeOut();
+					$('#group4').show();
+					$('#group5').fadeOut();
+					$('#group6').fadeOut();
+					
+				}
+				
+				if (frame.pointables.length == 5){
+					$('#group1').fadeOut();
+					$('#group2').fadeOut();
+					$('#group3').fadeOut();
+					$('#group4').fadeOut();
+					$('#group5').show();
+					$('#group6').fadeOut();
+					
+				}
+				
+				if (frame.pointables.length == 6){
+					$('#group1').fadeOut();
+					$('#group2').fadeOut();
+					$('#group3').fadeOut();
+					$('#group4').fadeOut();
+					$('#group5').fadeOut();
+					$('#group6').show();
+					
+				}
+				
+				return;
+			} 
+			
+			
+			
+			
+			$("#priorityBox").attr("fill", "white");
+			// save default status
+			
+			$("circle").attr("class", "");
+			//console.log(pos[0] +"," + pos[1]);
+			for (var i =0; i < bugList.length; i++) {
+				
+				var bugNode = bugList[i];
+				
+				var node;
+				var defaultColor;
+				var defaultSize;
+				var touchStatus = 0;
+				
+				// touch the circle
+				if (Math.abs(pos[0] - bugNode.posX) < bugNode.r && Math.abs(pos[1] - bugNode.posY) < bugNode.r) {		
+					
+					touchStatus = 1
+					var id = "#" + bugNode.bugID;
+					
+					node = $(id);
+					//console.log(node.attr("cx"));
+					//node = document.getElementById(bugNode.bugID);
+					
+					node.attr("class", "hover");
+					//node = d3.select(bugNode.bugID).classed("hover", true);
+					//if (document.getElementById(bugNode.bugID) != "none") {
+						// Change node to touch mode
+						//node.attr("r", 50);
+						//node.setAttribute("fill","gray");
+
+						// draw Timeline
+						//utility.DrawSunblust(node.attr("cx"), node.attr("cy"), bugList[i]);
+						utility.DrawTimeLine(node.attr("cx"), node.attr("cy"), bugList[i]);
+					//}
+					
+					return;
+				}
+				
+					//node.attr("r", bugNode.r);
+				
+				//	node.attr("fill", bugNode.cClor);
+		
+				$("#timeline").remove();
+				//$("#sunblust").remove();			
+			}	
+
+		    
+	   	});	
+		
+	  	
+    });
+  
+
+
+    // Get frames rolling by connecting the controller
+    controller.connect();
+	
+  </script>
+
+	  
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+"bugs": [
+{ "bug_id":"5648" , "fileName":"/data/bugs/bug1.json" }, 
+{ "bug_id":"6985" , "fileName":"/data/bugs/bug2.json" }, 
+{ "bug_id":"10258" , "fileName":"/data/bugs/bug1.json" }
+]
+}
