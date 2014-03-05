@@ -2,15 +2,19 @@ bugarium
 ========
 ##### ============== Set up ================
 
-** *note this demo version will run offline. so you need to setup path as your local computer **
-** *you need to connect the internet while doing the demo in order to load javascript library **
+__*note this demo version will run offline. so you need to setup path as your local computer__
+
+__*you need to connect the internet while doing the demo in order to load javascript library__
 
 ###### Go to BugV.html 
 - Setup Path (Line: 82 - 90) 	 
-    change path to your local path 
+        change path to your local path 
+
 - Setup Config (Line: 93 - 95)         	
-    change link to bugarium to your local path 	
-    change display width and hight for your screen size. 
+        change link to bugarium to your local path 	
+
+        change display width and hight for your screen size. 
+        
 - change link for level picture (Line:372)  
 
 ###### Go to Index.html 
